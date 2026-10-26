@@ -1,3 +1,4 @@
+import requests
 import os
 import fitz  # PyMuPDF
 import arabic_reshaper
@@ -140,8 +141,21 @@ def process_pdf(input_path: str, output_path: str, cfg: dict):
                 annot.set_colors(stroke=cfg["highlight_color"])
                 annot.update()
 
-            try:
-                translated = translator.translate(text[:400])
+            try:                headers = {
+                    "Authorization": "Bearer Cc_48dyjDHTuwvNybM1SOBfu0uDPyvzX2UfdxYRBWMHyFsb4PEG",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "model": "gpt-3.5-turbo",
+                    "messages": [
+                        {"role": "system", "content": "أنت مترجم محترف، ترجم النص التالي إلى العربية بدقة وبدون أي إضافات."},
+                        {"role": "user", "content": text[:400]}
+                    ]
+                }
+                res = requests.post("https://api.oxionai.com/v1/chat/completions", headers=headers, json=payload).json()
+                translated = res['choices'][0]['message']['content'].strip()
+
+                
                 if not translated:
                     continue
 
